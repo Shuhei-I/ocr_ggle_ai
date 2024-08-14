@@ -1,0 +1,10 @@
+# 無視するフォルダ・ファイルたち
+venv/
+.doc/
+.env
+receipts.db
+*.jpeg
+*.jpg
+*.png
+*.JPG
+*.JPEG
