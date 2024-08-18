@@ -3,3 +3,4 @@ pandas
 pillow
 google-cloud-vision
 python-dotenv
+mecab-python3

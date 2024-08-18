@@ -9,6 +9,7 @@ from google.cloud import vision
 import io
 from dotenv import load_dotenv
 import re
+import MeCab
 
 # 環境変数の読み込み
 load_dotenv()
@@ -109,7 +110,7 @@ def get_data_from_db():
 
 # CSVファイルの生成
 def create_csv(data):
-    return data.to_csv(index=False).encode('utf-8')
+    return data.to_csv(index=False).encode('utf-8-sig')
 
 # 画像ファイル名の変更
 def rename_image(old_path, new_name):
@@ -122,6 +123,23 @@ def rename_image(old_path, new_name):
     except OSError as e:
         print(f"Error renaming file: {e}")
         return old_path
+
+# レシート内容から名詞を抽出
+def extract_receipt_nouns(text):
+    text = text
+    mecab = MeCab.Tagger('-Ochasen')
+
+    node = mecab.parseToNode(text)
+    output = []
+
+    while node:
+        word_type = node.feature.split(",")[0]
+        if word_type in ["名詞"]:
+            if not node.surface.isdigit():
+                output.append(node.surface.upper())
+        node = node.next
+    
+    return output
 
 # Streamlitアプリケーション
 def main():
@@ -145,9 +163,13 @@ def main():
             st.image(image, caption='アップロードされた画像', use_column_width=True)
             
             with st.spinner('テキストを抽出中...'):
+                # テキスト抽出
                 extracted_text = extract_text(image)
+                # 名詞抽出用の関数
+                result_nouns = extract_receipt_nouns(extracted_text)
             edited_text = st.text_area("抽出されたテキスト（編集可能）", extracted_text, height=250)
-            
+            nouns_text = st.text_area("抽出された名詞",result_nouns, height=250)
+
             parsed_date,amount_candidates = parse_receipt(edited_text)
             with st.form("my_form"):
                 st.write("抽出されたデータ:")
