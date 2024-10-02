@@ -127,14 +127,15 @@ def rename_image(old_path, new_name):
 # レシート内容から名詞を抽出
 def extract_receipt_nouns(text):
     text = text
-    mecab = MeCab.Tagger('-Ochasen')
+    mecab = MeCab.Tagger('-Ochasen -d "C:/Program Files/MeCab/dic/ipadic" -u "C:/Program Files/MeCab/dic/NEologD/NEologd.20200910-u.dic"')
 
     node = mecab.parseToNode(text)
     output = []
 
     while node:
-        word_type = node.feature.split(",")[0]
-        if word_type in ["名詞"]:
+        word_type = node.feature.split(",")[1:4]
+        print(node.feature, word_type)
+        if "固有名詞" in word_type and "組織" in word_type:
             if not node.surface.isdigit():
                 output.append(node.surface.upper())
         node = node.next
